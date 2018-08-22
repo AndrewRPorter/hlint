@@ -5,6 +5,11 @@ hlint
 
 .. _linter: https://github.com/mozilla/html5-lint
 
+Installation
+============
+
+`pip install hlint`
+
 Usage
 =====
 
