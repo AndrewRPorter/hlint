@@ -1,14 +1,16 @@
 hlint
 =====
 
-`hlint` uses Mozilla's HTML5 Validator instance to lint HTML documents. This project is heavily influenced by mozilla's own linter_.
+**hlint** uses Mozilla's HTML5 Validator instance to lint HTML documents. This project is heavily influenced by mozilla's own linter_.
 
 .. _linter: https://github.com/mozilla/html5-lint
 
 Installation
 ============
 
-`pip install hlint`
+.. code::
+
+   pip install hlint
 
 Usage
 =====
