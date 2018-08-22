@@ -49,9 +49,9 @@ except AttributeError:
     maketrans = string.maketrans
 
 
-class Linter(object):
+class Result(object):
     def __init__(self):
-        pass
+        self.dirty = 0
 
 
 def valid(fileName):
@@ -220,17 +220,22 @@ def valid(fileName):
             return False
 
 
-def lint(file_list):
+def check(file):
+    flag = valid(file)
+    return flag
+    
+
+def check_files(file_list):
     results = {}
 
     for f in file_list:
-        flag, message = valid(f)
-
+        flag = valid(f)
+        
         if not flag:
-            results[f] = message
+            results[f] = flag
 
     if results:
-        for key, value in results:
+        for key, value in results.items():
             print(key, value)
 
     return results
