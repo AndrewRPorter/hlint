@@ -4,7 +4,7 @@ hlint
 Usage
 =====
 
-.. code::
+.. code-block:: python
 
    from hlint import lint
 
@@ -12,7 +12,7 @@ Usage
    print(result)
    assert(result.flag == True)
 
-.. code::
+.. code-block:: python
 
    from hlint import lint
 
