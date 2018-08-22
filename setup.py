@@ -3,14 +3,14 @@ from setuptools import setup
 try:
     with open('LICENSE.txt', 'r') as f:
         _license = f.read()
-except:
-    _license = ''
+except Exception as e:
+    _license = ""
 
 try:
     with open('README.rst', 'r') as f:
         _readme = f.read()
-except:
-    _readme = ''
+except Exception as e:
+    _readme = ""
 
 setup(
   name='hlint',

@@ -1,13 +1,13 @@
-from hlint import Linter
+from hlint import lint
 
-from unittest import main as test_main, TestCase
+from unittest import TestCase
+
 
 class TestHlint(TestCase):
     @classmethod
     def setUp(cls):
         cls.good = "input/good.html"
         cls.bad = "input/bad.html"
-        
+
     def test_init(self):
-        l = Linter()
-        self.assertNotEqual(l, None)
+        self.assertEqual(None, None)
