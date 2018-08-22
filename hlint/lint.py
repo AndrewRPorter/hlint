@@ -22,6 +22,7 @@
 
 from __future__ import print_function, with_statement
 
+import os
 import sys
 import re
 import string
@@ -49,9 +50,31 @@ except AttributeError:
     maketrans = string.maketrans
 
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
 class Result(object):
-    def __init__(self):
-        self.dirty = 0
+    def __init__(self, file_name="", message="", flag=False):
+        self.file_name = file_name
+        self.message = message
+        self.flag = flag
+
+    def __str__(self):
+        return self.message
+
+
+class Results(object):
+    def __init__(self, data={}, file_list=[]):
+        self.total_error_count = len(data)
+        self.file_list = file_list
+        self.data = data
+
+    def __str__(self):
+        message = ""
+        for key, value in self.data.items():
+            message += "{name}\n===========\n{value}\n".format(name=key,
+                                                               value=value)
+        return message
 
 
 def valid(fileName):
@@ -80,8 +103,8 @@ def valid(fileName):
     # Ensure a maximum of one forced output type
     #
     if forceXml and forceHtml:
-        sys.stderr.write("Cannot force HTML and XHTML at the same time.\n")
-        return False
+        msg = "Cannot force HTML and XHTML at the same time."
+        return False, msg
 
     #
     # Set contentType
@@ -91,7 +114,7 @@ def valid(fileName):
     elif forceHtml:
         contentType = "text/html"
     elif fileName:
-        m = extPat.match(fileName)
+        m = extPat.match(os.path.join(BASE_DIR, fileName))
         if m:
             ext = m.group(1)
             ext = ext.translate(
@@ -100,18 +123,14 @@ def valid(fileName):
             if ext in extDict:
                 contentType = extDict[ext]
             else:
-                sys.stderr.write(
-                    "Unable to guess Content-Type from file name. Please force the type.\n"
-                )
-                return False
+                msg = "Unable to guess Content-Type from file name"
+                return False, msg
         else:
-            sys.stderr.write(
-                "Could not extract a filename extension. Please force the type.\n"
-            )
-            return False
+            msg = "Could not extract a filename extension"
+            return False, msg
     else:
-        sys.stderr.write("Need to force HTML or XHTML when reading from stdin.\n")
-        return False
+        msg = "Need to force HTML or XHTML when reading from stdin"
+        return False, msg
 
     if encoding:
         contentType = "%s; charset=%s" % (contentType, encoding)
@@ -160,8 +179,7 @@ def valid(fileName):
         parsed = urlparse.urlsplit(url)
 
         if redirectCount > 5:
-            sys.stdout.write("Failed to make connection!")
-            return False
+            return False, "Failed to make connection!"
 
         if parsed.scheme == "https":
             connection = httplib.HTTPSConnection(parsed[1])
@@ -178,7 +196,8 @@ def valid(fileName):
         urlSuffix = "%s?%s" % (parsed[2], parsed[3])
 
         connection.connect()
-        connection.request("POST", urlSuffix, body=gzippeddata, headers=headers)
+        connection.request("POST", urlSuffix, body=gzippeddata,
+                           headers=headers)
 
         response = connection.getresponse()
         status = response.status
@@ -189,8 +208,8 @@ def valid(fileName):
     # Handle the response
     #
     if status != 200:
-        sys.stderr.write("%s %s\n" % (status, response.reason))
-        return False
+        msg = "%s %s" % (status, response.reason,)
+        return False, msg
 
     if response.getheader("Content-Encoding", "identity").lower() == "gzip":
         response = gzip.GzipFile(fileobj=BytesIO(response.read()))
@@ -212,30 +231,26 @@ def valid(fileName):
             == "The document is valid HTML5 + ARIA + SVG 1.1 + MathML 2.0 (subject to the utter previewness of this service)."
         ):
             connection.close()
-            return True
+            return True, "{name} is clean!".format(name=fileName)
         else:
-            sys.stdout.write("\n" + fileName + "\n===============\n")
-            sys.stdout.write(output)
             connection.close()
-            return False
+            return False, str(output)
 
 
 def check(file):
-    flag = valid(file)
-    return flag
-    
+    flag, message = valid(file)
+    result = Result(file_name=file, message=message, flag=flag)
+    return result
+
 
 def check_files(file_list):
-    results = {}
+    data = {}
 
     for f in file_list:
-        flag = valid(f)
-        
+        flag, message = valid(f)
+
         if not flag:
-            results[f] = flag
+            data[f] = message
 
-    if results:
-        for key, value in results.items():
-            print(key, value)
-
+    results = Results(data=data, file_list=file_list)
     return results
